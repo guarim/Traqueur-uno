@@ -38,7 +38,7 @@ async function onResults(results) {
     
     // Calcul de la cible : X centre, Y légèrement plus haut (front)
     const targetX = Math.round(face.xCenter * 640);
-    const targetY = Math.round((face.yCenter * 480) - (face.height * 480 * 0.3));
+    const targetY = Math.round((face.yCenter * 480) - (face.height * 480 + 50));
 
     // Dessin cible front (Rouge)
     canvasCtx.strokeStyle = "red";
@@ -59,7 +59,7 @@ async function onResults(results) {
     spanDY.innerText = diffY;
 
     // Envoi à l'Arduino (on réduit l'amplitude pour la fluidité)
-    sendToArduino(Math.round(diffX / 90), Math.round(diffY / 90));
+    sendToArduino(Math.round(diffX / 90), Math.round(diffY / 140));
   } else {
     statusMsg.innerText = "PAS DE CIBLE";
     statusMsg.className = "status lost";
