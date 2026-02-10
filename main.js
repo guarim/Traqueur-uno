@@ -1,46 +1,65 @@
 const canvasElement = document.getElementById('output_canvas');
 const canvasCtx = canvasElement.getContext('2d');
 const statusMsg = document.getElementById('statusMsg');
+const spanTX = document.getElementById('targetX');
+const spanTY = document.getElementById('targetY');
+const spanDX = document.getElementById('diffX');
+const spanDY = document.getElementById('diffY');
+
 let port;
 
-// Initialisation MediaPipe
 const faceDetection = new FaceDetection({
   locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`
 });
 
-faceDetection.setOptions({ model: 'short', minDetectionConfidence: 0.5 });
+faceDetection.setOptions({
+  model: 'short',
+  minDetectionConfidence: 0.6
+});
 
 async function onResults(results) {
   canvasCtx.save();
-  canvasCtx.clearRect(0, 0, 640, 480);
-  canvasCtx.drawImage(results.image, 0, 0, 640, 480);
+  
+  // Rendu clean : on dessine l'image sur toute la surface définie (640x480)
+  canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+  canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
-  // Dessin du centre de l'image (Bleu)
+  // Centre de l'écran (Bleu)
+  const centerX = 320;
+  const centerY = 240;
   canvasCtx.strokeStyle = "blue";
+  canvasCtx.lineWidth = 2;
   canvasCtx.beginPath();
-  canvasCtx.arc(320, 240, 5, 0, 2 * Math.PI);
+  canvasCtx.arc(centerX, centerY, 10, 0, 2 * Math.PI);
   canvasCtx.stroke();
 
   if (results.detections.length > 0) {
     const face = results.detections[0].boundingBox;
-    // Estimation du milieu du front
-    const targetX = (face.xCenter * 640);
-    const targetY = (face.yCenter * 480) - (face.height * 480 * 0.2); // Remonte vers le front
+    
+    // Calcul de la cible : X centre, Y légèrement plus haut (front)
+    const targetX = Math.round(face.xCenter * 640);
+    const targetY = Math.round((face.yCenter * 480) - (face.height * 480 * 0.3));
 
-    // Dessin cible (Rouge)
+    // Dessin cible front (Rouge)
     canvasCtx.strokeStyle = "red";
     canvasCtx.beginPath();
     canvasCtx.arc(targetX, targetY, 8, 0, 2 * Math.PI);
     canvasCtx.stroke();
 
+    // Mise à jour interface
     statusMsg.innerText = "CIBLE ACQUISE";
     statusMsg.className = "status acquired";
+    
+    const diffX = targetX - centerX;
+    const diffY = targetY - centerY;
 
-    // Calcul des écarts pour l'Arduino (facteur de sensibilité de 1 à 2)
-    const diffX = Math.round((targetX - 320) / 40);
-    const diffY = Math.round((targetY - 240) / 40);
+    spanTX.innerText = targetX;
+    spanTY.innerText = targetY;
+    spanDX.innerText = diffX;
+    spanDY.innerText = diffY;
 
-    sendToArduino(diffX, diffY);
+    // Envoi à l'Arduino (on réduit l'amplitude pour la fluidité)
+    sendToArduino(Math.round(diffX / 50), Math.round(diffY / 50));
   } else {
     statusMsg.innerText = "PAS DE CIBLE";
     statusMsg.className = "status lost";
@@ -48,7 +67,6 @@ async function onResults(results) {
   canvasCtx.restore();
 }
 
-// Communication Web Serial
 async function sendToArduino(x, y) {
   if (port && port.writable) {
     const writer = port.writable.getWriter();
@@ -59,13 +77,22 @@ async function sendToArduino(x, y) {
 }
 
 document.getElementById('connectBtn').onclick = async () => {
-  port = await navigator.serial.requestPort();
-  await port.open({ baudRate: 115200 });
+  try {
+    port = await navigator.serial.requestPort();
+    await port.open({ baudRate: 115200 });
+    alert("Arduino Connecté");
+  } catch (e) {
+    console.error("Erreur de connexion", e);
+  }
 };
 
 const camera = new Camera(document.createElement('video'), {
-  onFrame: async () => { await faceDetection.send({image: camera.video}); },
-  width: 640, height: 480
+  onFrame: async () => {
+    await faceDetection.send({image: camera.video});
+  },
+  width: 640,
+  height: 480
 });
+
 camera.start();
 faceDetection.onResults(onResults);
