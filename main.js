@@ -38,7 +38,7 @@ async function onResults(results) {
     
     // Calcul de la cible : X centre, Y légèrement plus haut (front)
     const targetX = Math.round(face.xCenter * 640);
-    const targetY = Math.round((face.yCenter * 480) - 40 );
+    const targetY = Math.round(face.yCenter * 480);
 
     // Dessin cible front (Rouge)
     canvasCtx.strokeStyle = "red";
