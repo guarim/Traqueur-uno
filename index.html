@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>FaceTrack Pro - Control</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; color: #333; margin: 0; padding: 20px; }
+        .container { display: flex; gap: 20px; justify-content: center; }
+        .video-box { position: relative; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        canvas { background: #000; width: 640px; height: 480px; }
+        .info-panel { background: #fff; padding: 20px; border-radius: 8px; width: 300px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .status { margin-top: 20px; padding: 15px; border-radius: 5px; text-align: center; font-weight: bold; }
+        .acquired { background: #e8f5e9; color: #2e7d32; }
+        .lost { background: #ffebee; color: #c62828; }
+        button { width: 100%; padding: 10px; cursor: pointer; background: #2c3e50; color: white; border: none; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="video-box">
+        <canvas id="output_canvas"></canvas>
+    </div>
+    
+    <div class="info-panel">
+        <h3>Coordonnées</h3>
+        <p>Cible X: <span id="targetX">0</span></p>
+        <p>Cible Y: <span id="targetY">0</span></p>
+        <p>Écart X: <span id="diffX">0</span></p>
+        <p>Écart Y: <span id="diffY">0</span></p>
+        <button id="connectBtn">Connecter Arduino</button>
+    </div>
+</div>
+
+<div id="statusMsg" class="status lost">PAS DE CIBLE</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
+<script src="main.js"></script>
+</body>
+</html>
