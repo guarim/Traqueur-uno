@@ -59,7 +59,7 @@ async function onResults(results) {
     spanDY.innerText = diffY;
 
     // Envoi à l'Arduino (on réduit l'amplitude pour la fluidité)
-    sendToArduino(Math.round(diffX / 90), Math.round(diffY / 200));
+    sendToArduino(Math.round(diffX / 90), Math.round(diffY / 250));
   } else {
     statusMsg.innerText = "PAS DE CIBLE";
     statusMsg.className = "status lost";
